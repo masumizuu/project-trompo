@@ -77,9 +77,22 @@ export default function Stores({ businesses, categories, locations, auth }: Stor
   const applyFilters = async () => {
     setIsLoading(true);
     try {
+      // Create a new object with only non-empty filter values
+      const cleanFilters = Object.fromEntries(
+        Object.entries(filters).filter(([_, value]) => 
+          value !== '' && value !== null && value !== undefined
+        )
+      );
+      
+      // Convert boolean to string for verified parameter
+      if (cleanFilters.verified !== undefined) {
+        cleanFilters.verified = cleanFilters.verified.toString();
+      }
+      
       const response = await axios.get(route('businesses.filter'), {
-        params: filters
+        params: cleanFilters
       });
+      
       setFilteredBusinesses(response.data.data);
       setPagination({
         currentPage: response.data.current_page,

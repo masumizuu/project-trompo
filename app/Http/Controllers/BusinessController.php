@@ -20,7 +20,9 @@ class BusinessController extends Controller
     {
         $businesses = Business::with(['owner', 'categoryRef', 'location'])
             ->when($request->has('verified'), function ($query) use ($request) {
-                return $query->where('is_verified', $request->verified === 'true');
+                // Convert the request value to boolean using PHP's type juggling
+                $isVerified = filter_var($request->verified, FILTER_VALIDATE_BOOLEAN);
+                return $query->where('is_verified', $isVerified);
             })
             ->orderBy('business_name')
             ->paginate(12);
@@ -139,7 +141,9 @@ class BusinessController extends Controller
                 });
             })
             ->when($request->has('verified'), function ($query) use ($request) {
-                return $query->where('is_verified', $request->verified === 'true');
+                // Convert the request value to boolean using PHP's type juggling
+                $isVerified = filter_var($request->verified, FILTER_VALIDATE_BOOLEAN);
+                return $query->where('is_verified', $isVerified);
             })
             ->paginate(12);
 
