@@ -240,4 +240,43 @@ class BusinessController extends Controller
             
         return response()->json($savedBusinesses);
     }
+
+    /**
+     * Display the sellables page.
+     */
+    public function sellablesIndex(Request $request)
+    {
+        $sellables = Sellable::with(['business.location'])
+            ->when($request->has('min_price'), function ($query) use ($request) {
+                return $query->where('price', '>=', $request->min_price);
+            })
+            ->when($request->has('max_price'), function ($query) use ($request) {
+                return $query->where('price', '<=', $request->max_price);
+            })
+            ->when($request->has('type'), function ($query) use ($request) {
+                return $query->where('sellable_type', $request->type);
+            })
+            ->paginate(12);
+
+        $businesses = Business::where('is_verified', true)
+            ->orderBy('business_name')
+            ->get();
+
+        return Inertia::render('Listings/Sellables', [
+            'sellables' => $sellables,
+            'businesses' => $businesses,
+        ]);
+    }
+
+    /**
+     * Display the specified sellable.
+     */
+    public function showSellable($id)
+    {
+        $sellable = Sellable::with(['business.location'])->findOrFail($id);
+        
+        return Inertia::render('Listings/SellableDetail', [
+            'sellable' => $sellable
+        ]);
+    }
 }

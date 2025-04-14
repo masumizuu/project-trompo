@@ -85,6 +85,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/saved-businesses', [App\Http\Controllers\BusinessController::class, 'getSavedBusinesses'])->name('businesses.saved');
 });
 
+// Sellables routes
+Route::get('/products-services', [App\Http\Controllers\BusinessController::class, 'sellablesIndex'])->name('sellables.all');
+Route::get('/products-services/{id}', [App\Http\Controllers\BusinessController::class, 'showSellable'])->name('sellable.show');
+
 require __DIR__.'/auth.php';
 
 Route::fallback(function () {
