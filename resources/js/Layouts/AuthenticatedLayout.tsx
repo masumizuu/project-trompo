@@ -34,6 +34,14 @@ export default function Authenticated({
                                     Listings
                                 </NavLink>
                             </div>
+                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                <NavLink
+                                    href={route('products-services')}
+                                    active={route().current('products-services')}
+                                >
+                                    Products & Services
+                                </NavLink>
+                            </div>
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
                                     href={route('dashboard')}
