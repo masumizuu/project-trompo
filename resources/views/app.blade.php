@@ -10,6 +10,9 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+        <!-- Icon -->
+        <link rel="icon" href="https://6v5e0ohgur.ufs.sh/f/MOFsf8KgsHLANMxcFE3z2DIfTlPUCYsrNvO071GK4wjVQ9gB" type="image/svg+xml">
+
         <!-- Scripts -->
         @routes
         @viteReactRefresh

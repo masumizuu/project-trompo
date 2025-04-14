@@ -39,7 +39,7 @@ export default function HowItWorks() {
   }
 
   return (
-    <section className="w-full py-24 md:py-32 bg-muted/30 relative overflow-hidden">
+    <section className="w-full py-24 md:py-32 relative overflow-hidden">
       <div className="absolute inset-0 -z-10 h-full w-full bg-white dark:bg-black 
         bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] 
         dark:bg-[linear-gradient(to_right,#1f1f1f_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f_1px,transparent_1px)] 
@@ -51,7 +51,7 @@ export default function HowItWorks() {
           <span className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
             How It Works
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary">
             A Simple Process to Get Started
           </h2>
           <p className="text-muted-foreground text-lg">
@@ -66,7 +66,6 @@ export default function HowItWorks() {
           viewport={{ once: true }}
           className="grid gap-12 md:grid-cols-3 relative"
         >
-          <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-border/40 -translate-y-1/2 z-0" />
 
           {steps.map((step, index) => (
             <motion.div

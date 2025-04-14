@@ -7,8 +7,12 @@ export default function Footer() {
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
           <div className="space-y-4">
             <div className="flex items-center gap-2 font-bold">
-              <div className="size-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground">
-                T
+              <div className="justify-center items-center">
+                <img
+                  src="https://6v5e0ohgur.ufs.sh/f/MOFsf8KgsHLANMxcFE3z2DIfTlPUCYsrNvO071GK4wjVQ9gB"
+                  alt="Trompo Logo"
+                  className="size-8 rounded-lg object-cover"
+                />
               </div>
               <span>Trompo</span>
             </div>

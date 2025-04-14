@@ -4,58 +4,117 @@
 
 @layer base {
     :root {
-        --background: 0 0% 100%;
-        --foreground: 222.2 84% 4.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 222.2 84% 4.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 222.2 84% 4.9%;
-        --primary: 222.2 47.4% 11.2%;
-        --primary-foreground: 210 40% 98%;
-        --secondary: 210 40% 96.1%;
-        --secondary-foreground: 222.2 47.4% 11.2%;
-        --muted: 210 40% 96.1%;
-        --muted-foreground: 215.4 16.3% 46.9%;
-        --accent: 210 40% 96.1%;
-        --accent-foreground: 222.2 47.4% 11.2%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 210 40% 98%;
-        --border: 214.3 31.8% 91.4%;
-        --input: 214.3 31.8% 91.4%;
-        --ring: 222.2 84% 4.9%;
+        --background: 240 100% 98%;
+        /* #f7f7ff */
+        --foreground: 330 3% 18%;
+        /* #2f2d2e */
+
+        --card: 210 53% 94%;
+        /* softened version of surface */
+        --card-foreground: 330 3% 18%;
+        /* same as main foreground */
+
+        --popover: 210 53% 95%;
+        /* lighter than card */
+        --popover-foreground: 330 3% 18%;
+
+        --primary: 3 96% 38%;
+        /* #c20d03 */
+        --primary-foreground: 0 0% 100%;
+        /* white */
+
+        --secondary: 213 17% 35%;
+        /* #495867 */
+        --secondary-foreground: 0 0% 100%;
+
+        --muted: 210 53% 84%;
+        /* #bdd5ea */
+        --muted-foreground: 215 16% 30%;
+        /* muted text over pastel bg */
+
+        --accent: 215 27% 47%;
+        /* #577399 */
+        --accent-foreground: 0 0% 100%;
+
+        --destructive: 0 84% 60%;
+        /* redish-orange */
+        --destructive-foreground: 0 0% 100%;
+
+        --border: 3 96% 38%;
+        /* same as primary */
+        --input: 210 60% 96%;
+        /* very light blue-gray */
+        --ring: 3 96% 38%;
+        /* match primary for focus */
+
         --radius: 0.5rem;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
+
+        --chart-1: 3 90% 45%;
+        /* warm red */
+        --chart-2: 215 38% 52%;
+        /* steel blue */
+        --chart-3: 210 20% 65%;
+        /* soft denim */
+        --chart-4: 185 30% 55%;
+        /* dusty teal */
+        --chart-5: 45 90% 62%;
+        /* soft gold */
     }
 
     .dark {
-        --background: 222.2 84% 4.9%;
-        --foreground: 210 40% 98%;
-        --card: 222.2 84% 4.9%;
-        --card-foreground: 210 40% 98%;
-        --popover: 222.2 84% 4.9%;
-        --popover-foreground: 210 40% 98%;
-        --primary: 210 40% 98%;
-        --primary-foreground: 222.2 47.4% 11.2%;
-        --secondary: 217.2 32.6% 17.5%;
-        --secondary-foreground: 210 40% 98%;
-        --muted: 217.2 32.6% 17.5%;
-        --muted-foreground: 215 20.2% 65.1%;
-        --accent: 217.2 32.6% 17.5%;
-        --accent-foreground: 210 40% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 210 40% 98%;
-        --border: 217.2 32.6% 17.5%;
-        --input: 217.2 32.6% 17.5%;
-        --ring: 212.7 26.8% 83.9%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
+        --background: 220 57% 12%;
+        /* #0f172a */
+        --foreground: 0 0% 100%;
+        /* white */
+
+        --card: 220 50% 10%;
+        /* slightly deeper than bg */
+        --card-foreground: 0 0% 100%;
+
+        --popover: 220 50% 13%;
+        /* slight elevation */
+        --popover-foreground: 0 0% 100%;
+
+        --primary: 3 94% 19%;
+        /* #600902 */
+        --primary-foreground: 240 100% 98%;
+        /* #f7f7ff */
+
+        --secondary: 215 27% 17%;
+        /* #1f2937 */
+        --secondary-foreground: 240 100% 98%;
+
+        --muted: 215 18% 47%;
+        /* #64748b */
+        --muted-foreground: 210 20% 85%;
+
+        --accent: 220 14% 37%;
+        /* #505A6B */
+        --accent-foreground: 0 0% 100%;
+
+        --destructive: 0 62% 30%;
+        /* darker red for alerts */
+        --destructive-foreground: 240 100% 98%;
+
+        --border: 3 94% 19%;
+        /* match primary for strong edge */
+        --input: 220 20% 20%;
+        /* slightly brighter than bg */
+        --ring: 3 94% 19%;
+        /* same as primary */
+
+        --radius: 0.5rem;
+
+        --chart-1: 3 80% 52%;
+        /* consistent red */
+        --chart-2: 215 38% 60%;
+        /* bluish slate */
+        --chart-3: 210 20% 72%;
+        /* soft denim */
+        --chart-4: 180 25% 50%;
+        /* muted teal */
+        --chart-5: 43 85% 63%;
+        /* golden pop */
     }
 }
 

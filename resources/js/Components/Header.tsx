@@ -21,7 +21,7 @@ export default function Header() {
   return (
     <header
       className={`sticky top-0 z-50 w-full backdrop-blur-lg transition-all duration-300 ${
-        isScrolled ? "bg-transparent" : "bg-[#c20d03]"
+        isScrolled ? "bg-secondary/30" : "bg-[#c20d03]"
       }`}
     >
       <div className="container flex h-16 items-center justify-between">
@@ -39,7 +39,7 @@ export default function Header() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex gap-8">
-          {["features", "testimonials", "pricing", "faq"].map((id) => (
+          {["stores", "sellables", "about", "contact"].map((id) => (
             <a
               key={id}
               href={`#${id}`}
@@ -82,7 +82,7 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-16 inset-x-0 bg-background/95 backdrop-blur-lg border-b">
           <div className="container py-4 flex flex-col gap-4">
-            {["features", "testimonials", "pricing", "faq"].map((id) => (
+            {["stores", "sellables", "about", "contact"].map((id) => (
               <a
                 key={id}
                 href={`#${id}`}
