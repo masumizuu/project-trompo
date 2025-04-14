@@ -3,8 +3,9 @@ import { Link } from "@inertiajs/react"
 import { LuMoon, LuSun, LuMenu, LuX } from "react-icons/lu"
 import Button from "@/Components/PrimaryButton"
 import { useTheme } from "@/lib/use-theme" // We'll set this up too
+import Dropdown from "./Dropdown"
 
-export default function Header() {
+export default function Header({ user }: { user?: { name: string; profile_photo_url?: string } }) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { theme, toggleTheme } = useTheme()
@@ -52,20 +53,64 @@ export default function Header() {
 
         {/* Right Actions */}
         <div className="hidden md:flex items-center gap-4">
-          <button onClick={toggleTheme} className="rounded-full p-2 text-white dark:text-gray-400 hover:bg-gray-800 dark:hover:bg-gray-700">
+          <button
+            onClick={toggleTheme}
+            className="rounded-full p-2 text-white dark:text-gray-400 hover:bg-gray-800 dark:hover:bg-gray-700"
+          >
             {theme === "dark" ? <LuMoon className="size-[18px]" /> : <LuSun className="size-[18px]" />}
             <span className="sr-only">Toggle theme</span>
           </button>
-          <Link
-            href={route("login")}
-            className="text-sm font-medium text-white transition hover:text-foreground"
-          >
-            Log in
-          </Link>
-          <Button className="rounded-full">
-            <Link href={route("register")}>Get Started</Link>
-          </Button>
+
+          {user ? (
+            <>
+              <Link href={route("dashboard")} className="text-sm font-medium text-white hover:text-foreground">
+                Dashboard
+              </Link>
+
+              <Dropdown>
+                <Dropdown.Trigger>
+                  <span className="inline-flex rounded-md">
+                    <button
+                      type="button"
+                      className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                    >
+                      {user.name}
+                      <svg
+                        className="-me-0.5 ms-2 h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </span>
+                </Dropdown.Trigger>
+
+                <Dropdown.Content>
+                  <Dropdown.Link href={route("profile.edit")}>Profile</Dropdown.Link>
+                  <Dropdown.Link href={route("logout")} method="post" as="button">
+                    Log Out
+                  </Dropdown.Link>
+                </Dropdown.Content>
+              </Dropdown>
+            </>
+          ) : (
+            <>
+              <Link href={route("login")} className="text-sm font-medium text-white transition hover:text-foreground">
+                Log in
+              </Link>
+              <Button className="rounded-full">
+                <Link href={route("register")}>Get Started</Link>
+              </Button>
+            </>
+          )}
         </div>
+
 
         {/* Mobile Menu Toggle */}
         <div className="md:hidden flex items-center gap-4">
@@ -93,13 +138,35 @@ export default function Header() {
               </a>
             ))}
             <div className="flex flex-col gap-2 pt-2 border-t">
-              <Link href={route("login")} className="py-2 text-sm font-medium">
-                Log in
-              </Link>
-              <Button className="rounded-full">
-                <Link href={route("register")}>Get Started</Link>
-              </Button>
+              {user ? (
+                <>
+                  <Link href={route("dashboard")} className="py-2 text-sm font-medium">
+                    Dashboard
+                  </Link>
+                  <Link href={route("profile.edit")} className="py-2 text-sm font-medium">
+                    Profile
+                  </Link>
+                  <form method="POST" action={route("logout")}>
+                    <button
+                      type="submit"
+                      className="py-2 text-sm font-medium text-left w-full text-red-600"
+                    >
+                      Log out
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <Link href={route("login")} className="py-2 text-sm font-medium">
+                    Log in
+                  </Link>
+                  <Button className="rounded-full">
+                    <Link href={route("register")}>Get Started</Link>
+                  </Button>
+                </>
+              )}
             </div>
+
           </div>
         </div>
       )}

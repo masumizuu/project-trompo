@@ -144,3 +144,12 @@
         transform: translateY(0);
     }
 }
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: hsl(var(--primary));
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring));
+    /* optional focus ring */
+}

@@ -69,6 +69,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/image', [ProfileController::class, 'updateImage'])->name('profile.image.update');
 });
 
+// Business routes
+Route::get('/stores', [App\Http\Controllers\BusinessController::class, 'index'])->name('stores');
+Route::get('/businesses/{id}', [App\Http\Controllers\BusinessController::class, 'show'])->name('business.show');
+Route::get('/sellables', [App\Http\Controllers\BusinessController::class, 'getAllSellables'])->name('sellables.all');
+Route::get('/sellables/{id}', [App\Http\Controllers\BusinessController::class, 'getSellable'])->name('sellable.show');
+Route::get('/search', [App\Http\Controllers\BusinessController::class, 'search'])->name('search');
+Route::get('/filter-businesses', [App\Http\Controllers\BusinessController::class, 'filterBusinesses'])->name('businesses.filter');
+Route::get('/filter-sellables', [App\Http\Controllers\BusinessController::class, 'filterSellables'])->name('sellables.filter');
+
+// Saved businesses routes (requires authentication)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/businesses/{id}/save', [App\Http\Controllers\BusinessController::class, 'saveBusiness'])->name('business.save');
+    Route::delete('/businesses/{id}/unsave', [App\Http\Controllers\BusinessController::class, 'unsaveBusiness'])->name('business.unsave');
+    Route::get('/saved-businesses', [App\Http\Controllers\BusinessController::class, 'getSavedBusinesses'])->name('businesses.saved');
+});
+
 require __DIR__.'/auth.php';
 
 Route::fallback(function () {
