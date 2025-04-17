@@ -18,7 +18,7 @@
         /* lighter than card */
         --popover-foreground: 330 3% 18%;
 
-        --primary: 3 96% 38%;
+        --primary: 3 94% 19%;
         /* #c20d03 */
         --primary-foreground: 0 0% 100%;
         /* white */
@@ -75,7 +75,7 @@
         /* slight elevation */
         --popover-foreground: 0 0% 100%;
 
-        --primary: 3 94% 19%;
+        --primary: 3 96% 38%;
         /* #600902 */
         --primary-foreground: 240 100% 98%;
         /* #f7f7ff */

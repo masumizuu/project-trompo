@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react"
+import { ReactNode, useEffect, useState } from "react"
 import { Link } from "@inertiajs/react"
 import { LuMoon, LuSun, LuMenu, LuX } from "react-icons/lu"
 import Button from "@/Components/PrimaryButton"
 import { useTheme } from "@/lib/use-theme" // We'll set this up too
 import Dropdown from "./Dropdown"
 
-export default function Header({ user }: { user?: { name: string; profile_photo_url?: string } }) {
+export default function Header({ user }: { user?: {
+  first_name: ReactNode
+  last_name: ReactNode
+  profile_photo_url?: string 
+} }) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { theme, toggleTheme } = useTheme()
@@ -40,16 +44,20 @@ export default function Header({ user }: { user?: { name: string; profile_photo_
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex gap-8">
-          {["stores", "sellables", "about", "contact"].map((id) => (
-            <a
-              key={id}
-              href={`#${id}`}
-              className="text-sm font-medium text-white transition hover:text-foreground"
-            >
-              {id.charAt(0).toUpperCase() + id.slice(1)}
-            </a>
-          ))}
+          {["stores", "Products & Services", "about", "contact"].map((id) => {
+            const href = id === "Products & Services" ? "products-services" : id;
+            return (
+              <a
+                key={id}
+                href={href}
+                className="text-sm font-medium text-white transition hover:text-foreground"
+              >
+                {id.charAt(0).toUpperCase() + id.slice(1)}
+              </a>
+            );
+          })}
         </nav>
+
 
         {/* Right Actions */}
         <div className="hidden md:flex items-center gap-4">
@@ -63,9 +71,6 @@ export default function Header({ user }: { user?: { name: string; profile_photo_
 
           {user ? (
             <>
-              <Link href={route("dashboard")} className="text-sm font-medium text-white hover:text-foreground">
-                Dashboard
-              </Link>
 
               <Dropdown>
                 <Dropdown.Trigger>
@@ -74,7 +79,7 @@ export default function Header({ user }: { user?: { name: string; profile_photo_
                       type="button"
                       className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                     >
-                      {user.name}
+                      {user.first_name} {user.last_name}
                       <svg
                         className="-me-0.5 ms-2 h-4 w-4"
                         xmlns="http://www.w3.org/2000/svg"
@@ -92,7 +97,8 @@ export default function Header({ user }: { user?: { name: string; profile_photo_
                 </Dropdown.Trigger>
 
                 <Dropdown.Content>
-                  <Dropdown.Link href={route("profile.edit")}>Profile</Dropdown.Link>
+                  <Dropdown.Link href={route("dashboard")}>Dashboard</Dropdown.Link>
+                   <Dropdown.Link href={route("profile.edit")}>Profile</Dropdown.Link>
                   <Dropdown.Link href={route("logout")} method="post" as="button">
                     Log Out
                   </Dropdown.Link>

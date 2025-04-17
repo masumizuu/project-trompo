@@ -13,12 +13,14 @@ export default function Welcome({
     laravelVersion,
     phpVersion,
 }: PageProps<{ laravelVersion: string; phpVersion: string }>) {
+    console.log('Auth user in Welcome page:', auth.user);
+    
     return (
         <>
             <Head title="a business directory 📍" />
             <div className="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
                 <div className="relative flex min-h-screen flex-col items-center justify-center selection:bg-[#FF2D20] selection:text-white">
-                    <Header />
+                    <Header user={auth.user} />
                     <AutoSliderBanner />
                     <Features />
                     <HowItWorks />

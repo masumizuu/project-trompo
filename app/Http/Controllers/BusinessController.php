@@ -123,30 +123,54 @@ class BusinessController extends Controller
      */
     public function filterBusinesses(Request $request)
     {
-        $businesses = Business::with(['owner', 'categoryRef', 'location'])
-            ->when($request->has('category'), function ($query) use ($request) {
-                return $query->where('category', $request->category);
-            })
-            ->when($request->has('location_id'), function ($query) use ($request) {
-                return $query->where('location_id', $request->location_id);
-            })
-            ->when($request->has('min_price') || $request->has('max_price'), function ($query) use ($request) {
-                return $query->whereHas('sellables', function ($q) use ($request) {
-                    if ($request->has('min_price')) {
-                        $q->where('price', '>=', $request->min_price);
-                    }
-                    if ($request->has('max_price')) {
-                        $q->where('price', '<=', $request->max_price);
-                    }
-                });
-            })
-            ->when($request->has('verified'), function ($query) use ($request) {
-                // Convert the request value to boolean using PHP's type juggling
-                $isVerified = filter_var($request->verified, FILTER_VALIDATE_BOOLEAN);
-                return $query->where('is_verified', $isVerified);
-            })
-            ->paginate(12);
-
+        // Log all request parameters for debugging
+        \Log::info('Filter Businesses Request:', $request->all());
+        
+        $query = Business::with(['owner', 'categoryRef', 'location']);
+        
+        // Filter by category
+        if ($request->has('category') && !empty($request->category)) {
+            $query->where('category', $request->category);
+            \Log::info('Filtering businesses by category: ' . $request->category);
+        }
+        
+        // Filter by location
+        if ($request->has('location_id') && !empty($request->location_id)) {
+            $query->where('location_id', $request->location_id);
+            \Log::info('Filtering businesses by location_id: ' . $request->location_id);
+        }
+        
+        // Filter by price range
+        if ($request->has('min_price') || $request->has('max_price')) {
+            $query->whereHas('sellables', function ($q) use ($request) {
+                if ($request->has('min_price') && is_numeric($request->min_price)) {
+                    $q->where('price', '>=', (float)$request->min_price);
+                    \Log::info('Filtering businesses by min price: ' . $request->min_price);
+                }
+                if ($request->has('max_price') && is_numeric($request->max_price)) {
+                    $q->where('price', '<=', (float)$request->max_price);
+                    \Log::info('Filtering businesses by max price: ' . $request->max_price);
+                }
+            });
+        }
+        
+        // Filter by verification status
+        if ($request->has('verified') && $request->verified !== null) {
+            $isVerified = filter_var($request->verified, FILTER_VALIDATE_BOOLEAN);
+            $query->where('is_verified', $isVerified);
+            \Log::info('Filtering businesses by verified: ' . ($isVerified ? 'true' : 'false'));
+        }
+        
+        // Get the results with pagination
+        $businesses = $query->paginate(12);
+        
+        // Log the SQL query for debugging
+        \Log::info('Filter Businesses SQL:', [
+            'query' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+            'count' => $businesses->total()
+        ]);
+        
         return response()->json($businesses);
     }
 
@@ -155,21 +179,60 @@ class BusinessController extends Controller
      */
     public function filterSellables(Request $request)
     {
-        $sellables = Sellable::with(['business'])
-            ->when($request->has('min_price'), function ($query) use ($request) {
-                return $query->where('price', '>=', $request->min_price);
-            })
-            ->when($request->has('max_price'), function ($query) use ($request) {
-                return $query->where('price', '<=', $request->max_price);
-            })
-            ->when($request->has('type'), function ($query) use ($request) {
-                return $query->where('sellable_type', $request->type);
-            })
-            ->when($request->has('business_id'), function ($query) use ($request) {
-                return $query->where('business_id', $request->business_id);
-            })
-            ->paginate(20);
-
+        // Log all request parameters for debugging
+        \Log::info('Filter Sellables Request:', $request->all());
+        
+        $query = Sellable::with(['business']);
+        
+        // Filter by product/service type
+        if ($request->has('type') && !empty($request->type)) {
+            $query->where('sellable_type', $request->type);
+            \Log::info('Filtering by type: ' . $request->type);
+        }
+        
+        // Filter by price range
+        if ($request->has('min_price') && is_numeric($request->min_price)) {
+            $query->where('price', '>=', (float)$request->min_price);
+            \Log::info('Filtering by min price: ' . $request->min_price);
+        }
+        
+        if ($request->has('max_price') && is_numeric($request->max_price)) {
+            $query->where('price', '<=', (float)$request->max_price);
+            \Log::info('Filtering by max price: ' . $request->max_price);
+        }
+        
+        // Filter by business ID
+        if ($request->has('business_id') && !empty($request->business_id)) {
+            $query->where('business_id', $request->business_id);
+            \Log::info('Filtering by business_id: ' . $request->business_id);
+        }
+        
+        // Filter by category (through business relationship)
+        if ($request->has('category') && !empty($request->category)) {
+            $query->whereHas('business', function($q) use ($request) {
+                $q->where('category', $request->category);
+            });
+            \Log::info('Filtering by category: ' . $request->category);
+        }
+        
+        // Filter by location (through business relationship)
+        if ($request->has('location_id') && !empty($request->location_id)) {
+            $query->whereHas('business', function($q) use ($request) {
+                $q->where('location_id', $request->location_id);
+            });
+            \Log::info('Filtering by location_id: ' . $request->location_id);
+        }
+        
+        // Get the results with pagination
+        $sellables = $query->paginate(20);
+        
+        // Log the SQL query for debugging
+        \Log::info('Filter Sellables SQL:', [
+            'query' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+            'count' => $sellables->total()
+        ]);
+        
         return response()->json($sellables);
     }
 
