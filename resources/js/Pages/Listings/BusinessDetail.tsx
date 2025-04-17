@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import axios from 'axios';
 import Layout from '@/Layouts/AuthenticatedLayout';
-import { LuMapPin, LuPhone, LuTag, LuHeart, LuHeartOff, LuStar, LuUser } from 'react-icons/lu';
+import { LuMapPin, LuPhone, LuTag, LuHeart, LuHeartOff, LuStar, LuUser, LuMessageCircle } from 'react-icons/lu';
 
 interface Sellable {
   sellable_id: string;
@@ -170,6 +170,18 @@ export default function BusinessDetail({ business, isSaved, auth }: BusinessDeta
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Business Owner</p>
                   </div>
+
+                  {auth.user && auth.user.user_type !== 'BUSINESSOWNER' && (
+                    <div className="mt-4">
+                      <Link
+                        href={route('chat.show', business.owner.user_id)}
+                        className="inline-flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+                      >
+                        <LuMessageCircle className="mr-2" />
+                        Chat with Seller
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

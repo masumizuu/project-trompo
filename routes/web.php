@@ -89,6 +89,18 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/products-services', [App\Http\Controllers\BusinessController::class, 'sellablesIndex'])->name('sellables.all');
 Route::get('/products-services/{id}', [App\Http\Controllers\BusinessController::class, 'showSellable'])->name('sellable.show');
 
+// Chat routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/chat', [App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/{userId}', [App\Http\Controllers\ChatController::class, 'show'])->name('chat.show');
+    Route::post('/chat/{conversationId}/messages', [App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send-message');
+    Route::post('/transactions', [App\Http\Controllers\ChatController::class, 'createTransaction'])->name('transactions.create');
+    Route::put('/transactions/{transactionId}/status', [App\Http\Controllers\ChatController::class, 'updateTransactionStatus'])->name('transactions.update-status');
+    Route::post('/disputes', [App\Http\Controllers\ChatController::class, 'createDispute'])->name('disputes.create');
+    Route::post('/disputes/{disputeId}/messages', [App\Http\Controllers\ChatController::class, 'addDisputeMessage'])->name('disputes.add-message');
+    Route::put('/disputes/{disputeId}/resolve', [App\Http\Controllers\ChatController::class, 'resolveDispute'])->name('disputes.resolve');
+});
+
 require __DIR__.'/auth.php';
 
 Route::fallback(function () {
