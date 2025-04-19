@@ -61,7 +61,7 @@ export default function ChatShow({
     
     setIsLoading(true);
     try {
-      const response = await axios.post(route('chat.send-message', conversation.conversation_id), {
+      const response = await axios.post(route('chat.send-message', conversation.id), {
         content: newMessage,
       });
       
@@ -78,7 +78,7 @@ export default function ChatShow({
   const attachProduct = async (sellableId: number) => {
     setIsLoading(true);
     try {
-      const response = await axios.post(route('chat.send-message', conversation.conversation_id), {
+      const response = await axios.post(route('chat.send-message', conversation.id), {
         content: 'I\'m interested in this product/service.',
         sellable_id: sellableId,
       });
@@ -97,7 +97,7 @@ export default function ChatShow({
     setIsLoading(true);
     try {
       const response = await axios.post(route('transactions.create'), {
-        conversation_id: conversation.conversation_id,
+        conversation_id: conversation.id,
         customer_id: currentUser.user_type === 'BUSINESSOWNER' ? otherUser.user_id : currentUser.user_id,
         business_id: business.business_id,
         items: items,
@@ -118,7 +118,7 @@ export default function ChatShow({
     try {
       const response = await axios.put(route('transactions.update-status', transactionId), {
         status: status,
-        conversation_id: conversation.conversation_id,
+        conversation_id: conversation.id,
         reason: reason,
       });
       
@@ -149,7 +149,7 @@ export default function ChatShow({
     try {
       const response = await axios.post(route('disputes.create'), {
         transaction_id: transactionId,
-        conversation_id: conversation.conversation_id,
+        conversation_id: conversation.id,
         reason: reason,
       });
       
@@ -187,7 +187,7 @@ export default function ChatShow({
     try {
       const response = await axios.post(route('disputes.add-message', disputeId), {
         message: message,
-        conversation_id: conversation.conversation_id,
+        conversation_id: conversation.id,
       });
       
       setMessages([...messages, response.data.message]);
@@ -217,7 +217,7 @@ export default function ChatShow({
     try {
       const response = await axios.put(route('disputes.resolve', disputeId), {
         resolution: resolution,
-        conversation_id: conversation.conversation_id,
+        conversation_id: conversation.id,
       });
       
       setMessages([...messages, response.data.message]);
@@ -253,7 +253,7 @@ export default function ChatShow({
                   <ConversationList 
                     conversations={conversations}
                     currentUser={currentUser}
-                    activeConversationId={conversation.conversation_id}
+                    activeConversationId={conversation.id}
                   />
                 </div>
                 

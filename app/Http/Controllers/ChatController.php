@@ -28,28 +28,25 @@ class ChatController extends Controller
     {
         $user = Auth::user();
         
-        // Get all conversations for the current user
-       $conversations = Conversation::whereHas('participants', function ($query) use ($user) {
+        $conversations = Conversation::whereHas('participants', function ($query) use ($user) {
                 $query->where('userId', $user->user_id);
             })
-            ->with(['participants.user', 'latestMessage'])
+            ->with(['participants', 'latestMessage'])
             ->get()
             ->map(function ($conversation) use ($user) {
-                // Determine the other user in the conversation
-                $otherUser = $conversation->user1_id === $user->user_id 
-                    ? $conversation->user2 
-                    : $conversation->user1;
+                $otherUser = $conversation->participants
+                    ->where('userId', '!=', $user->user_id)
+                    ->first();
                 
-                // Count unread messages
-                $unreadCount = Message::where('conversation_id', $conversation->conversation_id)
-                    ->where('sender_id', '!=', $user->user_id)
+                $unreadCount = Message::where("conversationId", $conversation->id)
+                    ->where("senderId", '!=', $user->user_id)
                     ->whereDoesntHave('readReceipts', function ($query) use ($user) {
-                        $query->where('user_id', $user->user_id);
+                        $query->where("userId", $user->user_id);
                     })
                     ->count();
                 
                 return [
-                    'conversation_id' => $conversation->conversation_id,
+                    "conversationId" => $conversation->id,
                     'other_user' => $otherUser,
                     'latest_message' => $conversation->latestMessage,
                     'unread_count' => $unreadCount,
@@ -64,6 +61,7 @@ class ChatController extends Controller
             'currentUser' => $user,
         ]);
     }
+
     
     /**
      * Show a specific conversation or create a new one.
@@ -90,7 +88,7 @@ class ChatController extends Controller
                 'isGroup' => false,
             ]);
 
-            $conversation->participants()->attach([$currentUser->user_id, $userId]);
+            $conversation->participants()->syncWithoutDetaching([$currentUser->user_id, $userId]);
         }
 
         
@@ -102,7 +100,7 @@ class ChatController extends Controller
         // }
         
         // Get messages for this conversation
-        $messages = Message::where('conversation_id', $conversation->conversation_id)
+        $messages = Message::where("conversationId", $conversation->id)
             ->with(['sender', 'attachedSellable', 'transaction'])
             ->orderBy('created_at')
             ->get();
@@ -110,36 +108,37 @@ class ChatController extends Controller
         // Mark messages as read
         $unreadMessages = $messages->filter(function ($message) use ($currentUser) {
             return $message->sender_id !== $currentUser->user_id && 
-                   !$message->readReceipts()->where('user_id', $currentUser->user_id)->exists();
+                   !$message->readReceipts()->where("userId", $currentUser->user_id)->exists();
         });
         
         foreach ($unreadMessages as $message) {
             ReadReceipt::create([
-                'message_id' => $message->message_id,
-                'user_id' => $currentUser->user_id,
+                "messageId" => $message->message_id,
+                "userId" => $currentUser->user_id,
                 'read_at' => now(),
             ]);
         }
         
         // Get all conversations for the sidebar
-        $conversations = Conversation::where('user1_id', $currentUser->user_id)
-            ->orWhere('user2_id', $currentUser->user_id)
-            ->with(['user1', 'user2', 'latestMessage'])
+        $conversations = Conversation::whereHas('participants', function ($query) use ($currentUser) {
+                $query->where('userId', $currentUser->user_id);
+            })
+            ->with(['participants', 'latestMessage'])
             ->get()
             ->map(function ($conv) use ($currentUser) {
-                $otherUser = $conv->user1_id === $currentUser->user_id 
-                    ? $conv->user2 
-                    : $conv->user1;
-                
-                $unreadCount = Message::where('conversation_id', $conv->conversation_id)
-                    ->where('sender_id', '!=', $currentUser->user_id)
+                $otherUser = $conv->participants
+                ->where('userId', '!=', $currentUser->user_id)
+                ->first();
+
+                $unreadCount = Message::where("conversationId", $conv->id)
+                    ->where("senderId", '!=', $currentUser->user_id)
                     ->whereDoesntHave('readReceipts', function ($query) use ($currentUser) {
-                        $query->where('user_id', $currentUser->user_id);
+                        $query->where("userId", $currentUser->user_id);
                     })
                     ->count();
                 
                 return [
-                    'conversation_id' => $conv->conversation_id,
+                    "conversationId" => $conv->conversation_id,
                     'other_user' => $otherUser,
                     'latest_message' => $conv->latestMessage,
                     'unread_count' => $unreadCount,
@@ -172,7 +171,7 @@ class ChatController extends Controller
                 $q->where('owner_id', $currentUser->user_id);
             })->where('customer_id', $otherUser->user_id);
         })
-        ->with(['transactionItems.sellable', 'business', 'customer', 'dispute'])
+        ->with(['items.sellable', 'business', 'customer', 'dispute'])
         ->orderBy('created_at', 'desc')
         ->get();
         
@@ -208,8 +207,8 @@ class ChatController extends Controller
 
         
         $message = Message::create([
-            'conversation_id' => $conversationId,
-            'sender_id' => $user->user_id,
+            "conversationId" => $conversationId,
+            "senderId" => $user->user_id,
             'content' => $request->content,
             'sellable_id' => $request->sellable_id,
         ]);
@@ -229,10 +228,79 @@ class ChatController extends Controller
     /**
      * Create a transaction.
      */
+    // public function createTransaction(Request $request)
+    // {
+    //     $request->validate([
+    //         "conversationId" => 'required|exists:conversations,id',
+    //         'customer_id' => 'required|exists:users,user_id',
+    //         'business_id' => 'required|exists:businesses,business_id',
+    //         'items' => 'required|array|min:1',
+    //         'items.*.sellable_id' => 'required|exists:sellables,sellable_id',
+    //         'items.*.quantity' => 'required|integer|min:1',
+    //         'items.*.price' => 'required|numeric|min:0',
+    //     ]);
+        
+    //     $user = Auth::user();
+    //     $conversation = Conversation::findOrFail($request->conversationId);
+        
+    //     // Ensure user is part of the conversation
+    //     if ($conversation->user1_id !== $user->user_id && $conversation->user2_id !== $user->user_id) {
+    //         return response()->json(['message' => 'Unauthorized'], 403);
+    //     }
+        
+    //     // Ensure user is the business owner
+    //     $business = Business::findOrFail($request->business_id);
+    //     if ($business->owner_id !== $user->user_id) {
+    //         return response()->json(['message' => 'Unauthorized'], 403);
+    //     }
+        
+    //     // Create transaction
+    //     $transaction = Transaction::create([
+    //         'customer_id' => $request->customer_id,
+    //         'business_id' => $request->business_id,
+    //         'status' => 'PENDING',
+    //         'date_initiated' => now(),
+    //     ]);
+        
+    //     // Create transaction items
+    //     $totalAmount = 0;
+    //     foreach ($request->items as $item) {
+    //         $itemTotal = $item['quantity'] * $item['price'];
+    //         $totalAmount += $itemTotal;
+            
+    //         TransactionItem::create([
+    //             'transaction_id' => $transaction->transaction_id,
+    //             'sellable_id' => $item['sellable_id'],
+    //             'quantity' => $item['quantity'],
+    //             'price' => $item['price'],
+    //         ]);
+    //     }
+        
+    //     // Update transaction with total amount
+    //     $transaction->total_amount = $totalAmount;
+    //     $transaction->save();
+        
+    //     // Send a system message about the transaction
+    //     $message = Message::create([
+    //         "conversationId" => $request->conversationId,
+    //         "senderId" => $user->user_id,
+    //         'content' => 'Created a new transaction.',
+    //         'transaction_id' => $transaction->transaction_id,
+    //     ]);
+        
+    //     // Load relationships
+    //     $transaction->load(['items.sellable', 'business', 'customer']);
+        
+    //     return response()->json([
+    //         'transaction' => $transaction,
+    //         'message' => $message,
+    //     ]);
+    // }
+
     public function createTransaction(Request $request)
     {
         $request->validate([
-            'conversation_id' => 'required|exists:conversations,conversation_id',
+            "conversationId" => 'required|exists:conversations,id',
             'customer_id' => 'required|exists:users,user_id',
             'business_id' => 'required|exists:businesses,business_id',
             'items' => 'required|array|min:1',
@@ -240,21 +308,21 @@ class ChatController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
         ]);
-        
+
         $user = Auth::user();
-        $conversation = Conversation::findOrFail($request->conversation_id);
-        
+        $conversation = Conversation::findOrFail($request->conversationId);
+
         // Ensure user is part of the conversation
-        if ($conversation->user1_id !== $user->user_id && $conversation->user2_id !== $user->user_id) {
+        if (!$conversation->participants()->where('userId', $user->user_id)->exists()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
-        
+
         // Ensure user is the business owner
         $business = Business::findOrFail($request->business_id);
         if ($business->owner_id !== $user->user_id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
-        
+
         // Create transaction
         $transaction = Transaction::create([
             'customer_id' => $request->customer_id,
@@ -262,13 +330,13 @@ class ChatController extends Controller
             'status' => 'PENDING',
             'date_initiated' => now(),
         ]);
-        
+
         // Create transaction items
         $totalAmount = 0;
         foreach ($request->items as $item) {
             $itemTotal = $item['quantity'] * $item['price'];
             $totalAmount += $itemTotal;
-            
+
             TransactionItem::create([
                 'transaction_id' => $transaction->transaction_id,
                 'sellable_id' => $item['sellable_id'],
@@ -276,28 +344,28 @@ class ChatController extends Controller
                 'price' => $item['price'],
             ]);
         }
-        
+
         // Update transaction with total amount
         $transaction->total_amount = $totalAmount;
         $transaction->save();
-        
+
         // Send a system message about the transaction
         $message = Message::create([
-            'conversation_id' => $request->conversation_id,
-            'sender_id' => $user->user_id,
+            "conversationId" => $request->conversationId,
+            "senderId" => $user->user_id,
             'content' => 'Created a new transaction.',
             'transaction_id' => $transaction->transaction_id,
         ]);
-        
+
         // Load relationships
-        $transaction->load(['transactionItems.sellable', 'business', 'customer']);
-        
+        $transaction->load(['items.sellable', 'business', 'customer']);
+
         return response()->json([
             'transaction' => $transaction,
             'message' => $message,
         ]);
     }
-    
+
     /**
      * Update transaction status.
      */
@@ -305,7 +373,7 @@ class ChatController extends Controller
     {
         $request->validate([
             'status' => 'required|in:PENDING,APPROVED,COMPLETED,INCOMPLETE',
-            'conversation_id' => 'required|exists:conversations,conversation_id',
+            "conversationId" => 'required|exists:conversations,id',
             'reason' => 'nullable|string',
         ]);
         
@@ -364,14 +432,14 @@ class ChatController extends Controller
         }
         
         $message = Message::create([
-            'conversation_id' => $request->conversation_id,
-            'sender_id' => $user->user_id,
+            "conversationId" => $request->conversationId,
+            "senderId" => $user->user_id,
             'content' => $statusMessage,
             'transaction_id' => $transaction->transaction_id,
         ]);
         
         // Load relationships
-        $transaction->load(['transactionItems.sellable', 'business', 'customer']);
+        $transaction->load(['items.sellable', 'business', 'customer']);
         
         return response()->json([
             'transaction' => $transaction,
@@ -386,7 +454,7 @@ class ChatController extends Controller
     {
         $request->validate([
             'transaction_id' => 'required|exists:transactions,transaction_id',
-            'conversation_id' => 'required|exists:conversations,conversation_id',
+            "conversationId" => 'required|exists:conversations,conversation_id',
             'reason' => 'required|string',
         ]);
         
@@ -417,14 +485,14 @@ class ChatController extends Controller
         // Create initial dispute message
         DisputeMessage::create([
             'dispute_id' => $dispute->dispute_id,
-            'sender_id' => $user->user_id,
+            "senderId" => $user->user_id,
             'message' => $request->reason,
         ]);
         
         // Send a system message about the dispute
         $message = Message::create([
-            'conversation_id' => $request->conversation_id,
-            'sender_id' => $user->user_id,
+            "conversationId" => $request->conversationId,
+            "senderId" => $user->user_id,
             'content' => 'Created a dispute: ' . $request->reason,
             'transaction_id' => $transaction->transaction_id,
         ]);
@@ -445,7 +513,7 @@ class ChatController extends Controller
     {
         $request->validate([
             'message' => 'required|string',
-            'conversation_id' => 'required|exists:conversations,conversation_id',
+            "conversationId" => 'required|exists:conversations,conversation_id',
         ]);
         
         $user = Auth::user();
@@ -464,14 +532,14 @@ class ChatController extends Controller
         // Create dispute message
         $disputeMessage = DisputeMessage::create([
             'dispute_id' => $disputeId,
-            'sender_id' => $user->user_id,
+            "senderId" => $user->user_id,
             'message' => $request->message,
         ]);
         
         // Send a system message about the dispute update
         $message = Message::create([
-            'conversation_id' => $request->conversation_id,
-            'sender_id' => $user->user_id,
+            "conversationId" => $request->conversationId,
+            "senderId" => $user->user_id,
             'content' => 'Added a message to the dispute: ' . $request->message,
             'transaction_id' => $transaction->transaction_id,
         ]);
@@ -492,7 +560,7 @@ class ChatController extends Controller
     {
         $request->validate([
             'resolution' => 'required|string',
-            'conversation_id' => 'required|exists:conversations,conversation_id',
+            "conversationId" => 'required|exists:conversations,conversation_id',
         ]);
         
         $user = Auth::user();
@@ -512,8 +580,8 @@ class ChatController extends Controller
         
         // Send a system message about the resolution
         $message = Message::create([
-            'conversation_id' => $request->conversation_id,
-            'sender_id' => $user->user_id,
+            "conversationId" => $request->conversationId,
+            "senderId" => $user->user_id,
             'content' => 'Resolved the dispute: ' . $request->resolution,
             'transaction_id' => $dispute->transaction_id,
         ]);
