@@ -10,6 +10,7 @@ import CreateTransactionModal from '@/Components/Chat/CreateTransactionModal';
 import TransactionDetails from '@/Components/Chat/TransactionDetails';
 import CreateDisputeModal from '@/Components/Chat/CreateDisputeModal';
 import DisputeDetails from '@/Components/Chat/DisputeDetails';
+import {Transaction} from '@/types';
 
 interface ChatShowProps {
   conversation: any;
@@ -39,7 +40,7 @@ export default function ChatShow({
   const [isAttachProductModalOpen, setIsAttachProductModalOpen] = useState(false);
   const [isCreateTransactionModalOpen, setIsCreateTransactionModalOpen] = useState(false);
   const [isCreateDisputeModalOpen, setIsCreateDisputeModalOpen] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [selectedDispute, setSelectedDispute] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);

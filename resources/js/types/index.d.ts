@@ -14,3 +14,17 @@ export type PageProps<
         user: User;
     };
 };
+
+export interface Transaction {
+  transaction_id: number;
+  customer_id: number;
+  business_id: number;
+  status: string;
+  reason_incomplete?: string;
+  date_initiated?: string; // or Date if you parse it
+  date_completed?: string; // or Date if you parse it
+  customer?: Customer;
+  business?: Business;
+  items?: any[]; // or TransactionItem[] if you type them later
+  dispute?: Dispute;
+}
