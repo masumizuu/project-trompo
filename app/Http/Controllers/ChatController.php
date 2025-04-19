@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB; 
+
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\ReadReceipt;
@@ -16,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
+
 class ChatController extends Controller
 {
     /**
@@ -26,9 +29,10 @@ class ChatController extends Controller
         $user = Auth::user();
         
         // Get all conversations for the current user
-        $conversations = Conversation::where('user1_id', $user->user_id)
-            ->orWhere('user2_id', $user->user_id)
-            ->with(['user1', 'user2', 'latestMessage'])
+       $conversations = Conversation::whereHas('participants', function ($query) use ($user) {
+                $query->where('userId', $user->user_id);
+            })
+            ->with(['participants.user', 'latestMessage'])
             ->get()
             ->map(function ($conversation) use ($user) {
                 // Determine the other user in the conversation
@@ -69,21 +73,33 @@ class ChatController extends Controller
         $currentUser = Auth::user();
         $otherUser = User::findOrFail($userId);
         
-        // Find existing conversation or create a new one
-        $conversation = Conversation::where(function ($query) use ($currentUser, $userId) {
-            $query->where('user1_id', $currentUser->user_id)
-                  ->where('user2_id', $userId);
-        })->orWhere(function ($query) use ($currentUser, $userId) {
-            $query->where('user1_id', $userId)
-                  ->where('user2_id', $currentUser->user_id);
-        })->first();
-        
-        if (!$conversation) {
+        // Find existing conversation manually
+        $conversationId = DB::table('conversation_participants')
+            ->select('conversationId')
+            ->whereIn('userId', [$currentUser->user_id, $userId])
+            ->groupBy('conversationId')
+            ->havingRaw('COUNT(DISTINCT "userId") = 2')
+            ->pluck('conversationId')
+            ->first();
+
+        if ($conversationId) {
+            $conversation = Conversation::with(['participants', 'latestMessage'])->find($conversationId);
+        } else {
             $conversation = Conversation::create([
-                'user1_id' => $currentUser->user_id,
-                'user2_id' => $userId,
+                'title' => null,
+                'isGroup' => false,
             ]);
+
+            $conversation->participants()->attach([$currentUser->user_id, $userId]);
         }
+
+        
+        // if (!$conversation) {
+        //     $conversation = Conversation::create([
+        //         'user1_id' => $currentUser->user_id,
+        //         'user2_id' => $userId,
+        //     ]);
+        // }
         
         // Get messages for this conversation
         $messages = Message::where('conversation_id', $conversation->conversation_id)
@@ -186,9 +202,10 @@ class ChatController extends Controller
         $conversation = Conversation::findOrFail($conversationId);
         
         // Ensure user is part of the conversation
-        if ($conversation->user1_id !== $user->user_id && $conversation->user2_id !== $user->user_id) {
+        if (!$conversation->participants()->where('userId', $user->user_id)->exists()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
+
         
         $message = Message::create([
             'conversation_id' => $conversationId,

@@ -11,59 +11,42 @@ class Message extends Model
 
     protected $primaryKey = 'message_id';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'content',
-        'timestamp',
-        'media',
+        'conversationId',
         'senderId',
         'recipientId',
-        'conversationId',
+        'timestamp',
+        'media',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'timestamp' => 'datetime',
-        'media' => 'array',
-    ];
-
-    /**
-     * Get the sender that owns the message.
-     */
-    public function sender()
-    {
-        return $this->belongsTo(User::class, 'senderId');
-    }
-
-    /**
-     * Get the recipient that owns the message.
-     */
-    public function recipient()
-    {
-        return $this->belongsTo(User::class, 'recipientId');
-    }
-
-    /**
-     * Get the conversation that owns the message.
-     */
     public function conversation()
     {
-        return $this->belongsTo(Conversation::class, 'conversationId');
+        return $this->belongsTo(Conversation::class, 'conversationId', 'id');
     }
 
-    /**
-     * Get the read receipts for the message.
-     */
+    public function sender()
+    {
+        return $this->belongsTo(User::class, 'senderId', 'user_id');
+    }
+
+    public function recipient()
+    {
+        return $this->belongsTo(User::class, 'recipientId', 'user_id');
+    }
+
     public function readReceipts()
     {
         return $this->hasMany(ReadReceipt::class, 'messageId');
+    }
+
+    public function attachedSellable()
+    {
+        return $this->belongsTo(Sellable::class, 'sellable_id');
+    }
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class, 'transaction_id');
     }
 }

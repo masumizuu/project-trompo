@@ -45,4 +45,15 @@ class Conversation extends Model
     {
         return $this->hasMany(Message::class, 'conversationId');
     }
+
+    /**
+     * Get the latest message for the conversation.
+     */
+    public function latestMessage()
+    {
+        return $this->hasOne(Message::class, 'conversationId', 'id')
+                    ->orderByDesc('created_at')
+                    ->limit(1);
+    }
+
 }
