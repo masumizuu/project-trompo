@@ -127,7 +127,7 @@ class ChatController extends Controller
             ->get()
             ->map(function ($conv) use ($currentUser) {
                 $otherUser = $conv->participants
-                ->where('userId', '!=', $currentUser->user_id)
+                ->where('user_id', '!=', $currentUser->user_id)
                 ->first();
 
                 $unreadCount = Message::where("conversationId", $conv->id)
@@ -139,7 +139,7 @@ class ChatController extends Controller
                 
                 return [
                     "conversationId" => $conv->conversation_id,
-                    'other_user' => $otherUser,
+                    'other_user' => $otherUser ? $otherUser : null,
                     'latest_message' => $conv->latestMessage,
                     'unread_count' => $unreadCount,
                     'updated_at' => $conv->updated_at,
@@ -205,13 +205,24 @@ class ChatController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        
+        // Fetch conversation participants
+        $participantIds = $conversation->participants()->pluck('userId')->toArray();
+
+        // Remove current user from participants
+        $recipientId = collect($participantIds)->first(function ($id) use ($user) {
+            return $id !== $user->user_id;
+        });
+
         $message = Message::create([
             "conversationId" => $conversationId,
             "senderId" => $user->user_id,
+            "recipientId" => $recipientId,
             'content' => $request->content,
             'sellable_id' => $request->sellable_id,
         ]);
+
+        // Fire the real-time event
+        event(new \App\Events\MessageSent($message));
         
         // Update conversation timestamp
         $conversation->touch();

@@ -2,8 +2,9 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
+import { LuMessageSquare, LuMessageSquareDot } from "react-icons/lu";
 
 export default function Authenticated({
     header,
@@ -13,6 +14,7 @@ export default function Authenticated({
     const user = auth?.user ?? null;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const hasUnreadMessages = useState(false); // (you will replace this with real dynamic data later)
 
     return (
         <div className="min-h-screen bg-background">
@@ -56,7 +58,19 @@ export default function Authenticated({
 
                         {user ? (
                             <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                                <div className="relative ms-3">
+                                <div className="relative ms-3 flex flex-row items-center space-x-4">
+                                   {hasUnreadMessages ? (
+                                        <LuMessageSquareDot 
+                                            onClick={() => router.visit(route('chat.index'))} 
+                                            className="h-8 w-8 cursor-pointer hover:text-primary dark:hover:text-primary" 
+                                        />
+                                    ) : (
+                                        <LuMessageSquare 
+                                            onClick={() => router.visit(route('chat.index'))} 
+                                            className="h-8 w-8 cursor-pointer hover:text-primary dark:hover:text-primary" 
+                                        />
+                                    )}
+
                                     <Dropdown>
                                         <Dropdown.Trigger>
                                             <span className="inline-flex rounded-md">

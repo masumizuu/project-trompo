@@ -5,6 +5,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Support\Facades\Broadcast;
+
+Broadcast::routes(['middleware' => ['web', 'auth']]);
 
 // Landing Page
 Route::get('/', function () {

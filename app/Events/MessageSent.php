@@ -28,10 +28,15 @@ class MessageSent implements ShouldBroadcast
     /**
      * Get the channels the event should broadcast on.
      */
-    public function broadcastOn(): array
+    public function broadcastOn()
     {
-        return [
-            new PrivateChannel('conversation.' . $this->message->conversation_id),
-        ];
+        return new PrivateChannel('conversation.' . $this->message->conversation_id);
     }
+
+    public function broadcastAs()
+    {
+        return 'message.sent';
+    }
+
+
 }

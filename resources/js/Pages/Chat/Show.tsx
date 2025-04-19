@@ -12,6 +12,8 @@ import CreateDisputeModal from '@/Components/Chat/CreateDisputeModal';
 import DisputeDetails from '@/Components/Chat/DisputeDetails';
 import {Transaction} from '@/types';
 
+import '@/echo'; // just to run the file so Echo is attached to window
+
 interface ChatShowProps {
   conversation: any;
   messages: any[];
@@ -49,7 +51,22 @@ export default function ChatShow({
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  
+
+  useEffect(() => {
+    if (!conversation?.id) return;
+
+    const channel = window.Echo.private(`conversation.${conversation.id}`);
+
+    channel.listen('App\\Events\\MessageSent', (e: any) => {
+      console.log('🔥 New message received via Echo:', e.message);
+      setMessages((prevMessages) => [...prevMessages, e.message]);
+    });
+
+    return () => {
+      window.Echo.leave(`conversation.${conversation.id}`);
+    };
+  }, [conversation?.id]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -65,7 +82,7 @@ export default function ChatShow({
         content: newMessage,
       });
       
-      setMessages([...messages, response.data]);
+      setMessages((prevMessages) =>[...prevMessages, response.data]);
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);

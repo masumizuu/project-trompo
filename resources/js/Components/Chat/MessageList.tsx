@@ -41,7 +41,7 @@ export default function MessageList({ messages, currentUser, otherUser, onTransa
           </div>
 
           {dateMessages.map(message => {
-            const isCurrentUser = message.sender_id === currentUser.user_id;
+            const isCurrentUser = message.senderId === currentUser.user_id;
             const hasAttachedSellable = message.sellable_id && message.attachedSellable;
             const hasTransaction = message.transaction_id && message.transaction;
 
@@ -55,7 +55,7 @@ export default function MessageList({ messages, currentUser, otherUser, onTransa
                   <div 
                     className={`rounded-lg px-4 py-2 ${
                       isCurrentUser 
-                        ? 'bg-primary-500 text-white rounded-tr-none' 
+                        ? 'bg-primary text-white rounded-tr-none' 
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-tl-none'
                     }`}
                   >
